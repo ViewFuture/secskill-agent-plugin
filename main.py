@@ -17,7 +17,17 @@ PLUGIN_API_KEY = os.getenv(
 )
 
 
+PLUGIN_API_KEY = os.getenv(
+    "PLUGIN_API_KEY",
+    "secskill_demo_2026_key"
+).strip()
+
+
 async def verify_plugin_key(
+    authorization: Optional[str] = Header(
+        default=None,
+        alias="Authorization"
+    ),
     x_plugin_key: Optional[str] = Header(
         default=None,
         alias="X-Plugin-Key"
@@ -25,9 +35,22 @@ async def verify_plugin_key(
     x_plugin_key_compat: Optional[str] = Header(
         default=None,
         alias="XPluginKey"
+    ),
+    plugin_key: Optional[str] = Query(
+        default=None
     )
 ):
-    provided_key = x_plugin_key or x_plugin_key_compat
+    provided_key = (
+        authorization
+        or x_plugin_key
+        or x_plugin_key_compat
+        or plugin_key
+        or ""
+    ).strip()
+
+    # 同时兼容 Authorization: Bearer xxx
+    if provided_key.lower().startswith("bearer "):
+        provided_key = provided_key[7:].strip()
 
     if provided_key != PLUGIN_API_KEY:
         raise HTTPException(
