@@ -21,12 +21,18 @@ async def verify_plugin_key(
     x_plugin_key: Optional[str] = Header(
         default=None,
         alias="X-Plugin-Key"
+    ),
+    x_plugin_key_compat: Optional[str] = Header(
+        default=None,
+        alias="XPluginKey"
     )
 ):
-    if x_plugin_key != PLUGIN_API_KEY:
+    provided_key = x_plugin_key or x_plugin_key_compat
+
+    if provided_key != PLUGIN_API_KEY:
         raise HTTPException(
             status_code=401,
-            detail="Invalid X-Plugin-Key"
+            detail="Invalid plugin API key"
         )
 
 
